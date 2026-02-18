@@ -1,0 +1,11 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# NOMAD CMS - /api/lib/ védelem
+# Segédkönyvtárak - közvetlen elérés tiltva
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Könyvtárlistázás tiltása
+Options -Indexes
+
+# Minden hozzáférés tiltása
+Order deny,allow
+Deny from all

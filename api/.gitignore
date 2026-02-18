@@ -1,0 +1,30 @@
+# Dependencies
+vendor/
+
+#
+# RSA Keys (NEVER commit!)
+keys/
+
+# SSL Certificates (NEVER commit!)
+ssl/
+
+# SQLite databases
+databases/*.sqlite
+databases/*.sqlite-journal
+databases/*.sqlite-wal
+databases/*.sqlite-shm
+
+# Logs
+logs/
+
+# Cache
+.cache/
+rate_limit/
+.phpunit.cache/
+
+# Pre-restore backups (created during restore)
+.pre_restore_backups/
+
+.DS_Store
+/uploads/*
+/files/*

@@ -1,0 +1,17 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# NOMAD CMS - /api/src/ védelem
+# PHP forráskód osztályok - közvetlen elérés tiltva
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Könyvtárlistázás tiltása
+Options -Indexes
+
+# Minden hozzáférés tiltása
+Order deny,allow
+Deny from all
+
+# PHP fájlok közvetlen elérése tiltva
+<FilesMatch "\.php$">
+    Order deny,allow
+    Deny from all
+</FilesMatch>

@@ -1,0 +1,44 @@
+# Dependencies
+api/vendor/
+frontend/node_modules/
+
+# Build output
+frontend/nomad/
+
+# Environment (NEVER commit secrets!)
+api/.env
+api/.env.local
+api/.env.production
+
+# Runtime data
+api/databases/
+api/keys/
+api/logs/
+api/uploads/*
+!api/uploads/.gitkeep
+api/files/*
+!api/files/.gitkeep
+api/static/*
+!api/static/.gitkeep
+api/storage/
+api/backups/
+api/temp/
+api/cache/
+api/nomad-install.lock
+api/services/
+api/f/
+api/.phpunit.cache/
+
+# OS
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build temp
+build_temp/

@@ -1,0 +1,14 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# NOMAD CMS - /api/data/ védelem
+# Teljes hozzáférés tiltása - érzékeny adatokat tartalmaz!
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Minden fájl tiltása
+Order deny,allow
+Deny from all
+
+# Semmilyen fájltípus nem elérhető közvetlenül
+<FilesMatch ".*">
+    Order deny,allow
+    Deny from all
+</FilesMatch>

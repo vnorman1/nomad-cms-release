@@ -1,0 +1,16 @@
+{
+  "name": "nomad-entropy-rust",
+  "type": "module",
+  "description": "High-security entropy collector for cryptographic key generation",
+  "version": "0.1.0",
+  "files": [
+    "nomad_entropy_rust_bg.wasm",
+    "nomad_entropy_rust.js",
+    "nomad_entropy_rust.d.ts"
+  ],
+  "main": "nomad_entropy_rust.js",
+  "types": "nomad_entropy_rust.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

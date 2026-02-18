@@ -1,0 +1,134 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# NOMAD CMS - Production .htaccess
+# Struktúra:
+#   /              → index.html (demo) VAGY dist/index.html (admin)
+#   /nomad/        → dist/ (Admin Frontend)
+#   /api/          → Backend API
+# ═══════════════════════════════════════════════════════════════════════════
+
+RewriteEngine On
+
+# ───────────────────────────────────────────────────────────────────────────
+# MIME Types (FONTOS a JS modulokhoz!)
+# ───────────────────────────────────────────────────────────────────────────
+
+AddType application/javascript .js .mjs
+AddType text/css .css
+AddType image/webp .webp
+AddType image/svg+xml .svg
+AddType application/wasm .wasm
+AddType application/json .json
+
+# ───────────────────────────────────────────────────────────────────────────
+# Statikus fájlok - ELSŐ PRIORITÁS (még a SPA fallback előtt!)
+# ───────────────────────────────────────────────────────────────────────────
+
+# Ha létező fájl, szolgáld ki közvetlenül
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# Ha létező könyvtár, szolgáld ki közvetlenül
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# ───────────────────────────────────────────────────────────────────────────
+# dist/ Admin Frontend routing
+# ───────────────────────────────────────────────────────────────────────────
+
+# /nomad/ routing
+# If the request is for an existing file or directory in /nomad/, let it be served directly
+RewriteCond %{REQUEST_URI} ^/nomad/
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# For all other requests to /nomad/, serve the SPA index using the physical path
+RewriteRule ^nomad/.*$ nomad/index.html [L]
+
+# ───────────────────────────────────────────────────────────────────────────
+# Sitemap & Robots
+# ───────────────────────────────────────────────────────────────────────────
+
+RewriteRule ^sitemap\.xml$ api/endpoints/sitemap.php [L]
+RewriteRule ^robots\.txt$ api/endpoints/sitemap.php?robots=1 [L]
+
+# ───────────────────────────────────────────────────────────────────────────
+# API - hagyd át a PHP-nak
+# ───────────────────────────────────────────────────────────────────────────
+
+# Az api/ mappa fizikailag létezik, az Apache automatikusan kezeli
+# De explicit szabályként is megadhatjuk:
+RewriteCond %{REQUEST_URI} ^/api/
+RewriteRule ^ - [L]
+
+# ───────────────────────────────────────────────────────────────────────────
+# Root / -> index.html (demo weboldal)
+# ───────────────────────────────────────────────────────────────────────────
+
+# A gyökér index.html a demo weboldal (CMS tartalmat jelenít meg)
+RewriteRule ^$ index.html [L]
+
+# ───────────────────────────────────────────────────────────────────────────
+# SPA Fallback
+# ───────────────────────────────────────────────────────────────────────────
+
+# Minden egyéb kérést irányítsunk az index.html-re (React Router kezeli a 404-et)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^.*$ index.html [L]
+
+# ───────────────────────────────────────────────────────────────────────────
+# Biztonsági beállítások
+# ───────────────────────────────────────────────────────────────────────────
+
+# Könyvtárlistázás tiltása
+Options -Indexes
+
+# Érzékeny fájlok védelme
+<FilesMatch "\.(env|htaccess|lock|sqlite|pem|log)$">
+    Order deny,allow
+    Deny from all
+</FilesMatch>
+
+# ───────────────────────────────────────────────────────────────────────────
+# Cache Control
+# ───────────────────────────────────────────────────────────────────────────
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # Assets (JavaScript, CSS) - 1 év cache (fingerprinted)
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/wasm "access plus 1 year"
+    
+    # Képek - 1 hónap cache
+    ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    
+    # HTML - nincs cache (SPA routing)
+    ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+# ───────────────────────────────────────────────────────────────────────────
+# Compression
+# ───────────────────────────────────────────────────────────────────────────
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+    AddOutputFilterByType DEFLATE application/javascript application/json
+    AddOutputFilterByType DEFLATE image/svg+xml application/wasm
+</IfModule>
+
+# ───────────────────────────────────────────────────────────────────────────
+# CORS Headers (API-hoz)
+# ───────────────────────────────────────────────────────────────────────────
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.(js|css|wasm)$">
+        Header set Access-Control-Allow-Origin "*"
+    </FilesMatch>
+</IfModule>

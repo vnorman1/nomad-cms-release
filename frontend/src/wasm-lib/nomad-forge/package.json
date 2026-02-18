@@ -1,0 +1,15 @@
+{
+  "name": "nomad-forge-rust",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "nomad_forge_rust_bg.wasm",
+    "nomad_forge_rust.js",
+    "nomad_forge_rust.d.ts"
+  ],
+  "main": "nomad_forge_rust.js",
+  "types": "nomad_forge_rust.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

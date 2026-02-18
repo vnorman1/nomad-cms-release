@@ -1,0 +1,217 @@
+name: Create Release with Delta Package
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for delta calculation
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+          cd ..
+          echo "Frontend build complete"
+          ls -la frontend/nomad/ 2>/dev/null || echo "Warning: frontend/nomad/ not found"
+
+      - name: Install composer dependencies (production)
+        run: |
+          cd api
+          composer install --no-dev --optimize-autoloader --no-interaction
+          cd ..
+          echo "Composer dependencies installed"
+
+      - name: Get previous tag
+        id: prev_tag
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          echo "tag=$PREV_TAG" >> $GITHUB_OUTPUT
+          echo "Previous tag: $PREV_TAG"
+
+      - name: Detect new migrations
+        id: migrations
+        run: |
+          PREV_TAG="${{ steps.prev_tag.outputs.tag }}"
+          MIGRATIONS="[]"
+          if [ -d "api/data/migrations" ]; then
+            if [ -n "$PREV_TAG" ]; then
+              # Find migration files added since the previous tag
+              NEW_MIGRATIONS=$(git diff --name-only --diff-filter=A "$PREV_TAG"..HEAD -- 'api/data/migrations/*.sql' 'api/data/migrations/*.php' | xargs -I{} basename {} | sort)
+            else
+              # First release — include all migration files
+              NEW_MIGRATIONS=$(ls api/data/migrations/*.{sql,php} 2>/dev/null | xargs -I{} basename {} | sort)
+            fi
+            if [ -n "$NEW_MIGRATIONS" ]; then
+              MIGRATIONS=$(echo "$NEW_MIGRATIONS" | jq -R -s 'split("\n") | map(select(length > 0))')
+              echo "Found new migrations: $MIGRATIONS"
+            fi
+          fi
+          echo "json=$MIGRATIONS" >> $GITHUB_OUTPUT
+
+      - name: Create delta package
+        run: |
+          # Build a deployable package (like build_release_fancy.zsh does)
+          BUILD_DIR="release_build"
+          TARGET_DIR="$BUILD_DIR/nomad-cms"
+          mkdir -p "$TARGET_DIR"
+          
+          # Copy frontend build output (Vite builds to frontend/nomad/)
+          if [ -d "frontend/nomad" ]; then
+            mkdir -p "$TARGET_DIR/nomad"
+            cp -r frontend/nomad/* "$TARGET_DIR/nomad/"
+            echo "Frontend assets copied: $(find $TARGET_DIR/nomad -type f | wc -l) files"
+          else
+            echo "ERROR: frontend/nomad/ not found! Frontend build may have failed."
+            exit 1
+          fi
+          
+          # Copy API (excluding runtime/user data)
+          rsync -a \
+            --exclude='*.sqlite' \
+            --exclude='*.sqlite-journal' \
+            --exclude='*.sqlite-wal' \
+            --exclude='databases/' \
+            --exclude='uploads/*' \
+            --exclude='files/*' \
+            --exclude='static/*' \
+            --exclude='logs/*' \
+            --exclude='storage/*' \
+            --exclude='keys/*' \
+            --exclude='backups/*' \
+            --exclude='temp/*' \
+            --exclude='cache/*' \
+            --exclude='data/install_attempts.json' \
+            --exclude='nomad-install.lock' \
+            --exclude='.env' \
+            --exclude='.env.local' \
+            --exclude='.env.production' \
+            --exclude='tests/' \
+            --exclude='.phpunit.cache/' \
+            --exclude='.DS_Store' \
+            api/ "$TARGET_DIR/api/"
+          echo "API files copied: $(find $TARGET_DIR/api -type f | wc -l) files"
+          
+          # Copy root config files
+          cp .htaccess "$TARGET_DIR/" 2>/dev/null || true
+          cp sitemap.xsl "$TARGET_DIR/" 2>/dev/null || true
+          
+          # Optimize vendor (remove unnecessary font files ~16MB saved)
+          if [ -d "$TARGET_DIR/api/vendor/endroid/qr-code/assets" ]; then
+            rm -rf "$TARGET_DIR/api/vendor/endroid/qr-code/assets"
+            mkdir -p "$TARGET_DIR/api/vendor/endroid/qr-code/assets"
+            touch "$TARGET_DIR/api/vendor/endroid/qr-code/assets/noto_sans.otf"
+            touch "$TARGET_DIR/api/vendor/endroid/qr-code/assets/open_sans.ttf"
+            echo "Vendor optimized (font placeholders created)"
+          fi
+          
+          echo "Build directory contents:"
+          find "$TARGET_DIR" -type f | head -20
+          echo "..."
+          echo "Total files in package: $(find $TARGET_DIR -type f | wc -l)"
+
+      - name: Generate manifest from build
+        run: |
+          # CRITICAL: Generate manifest from the BUILT package, not from source!
+          # This ensures manifest paths match what's in files.zip
+          BUILD_DIR="release_build"
+          TARGET_DIR="$BUILD_DIR/nomad-cms"
+          php scripts/generate-manifest.php ${{ github.ref_name }} "$TARGET_DIR" > manifest.json
+          
+          # Inject migrations into manifest if any were detected
+          MIGRATIONS='${{ steps.migrations.outputs.json }}'
+          if [ "$MIGRATIONS" != "[]" ] && [ -n "$MIGRATIONS" ]; then
+            # Use jq to add migrations array to manifest
+            jq --argjson migrations "$MIGRATIONS" '.migrations = $migrations' manifest.json > manifest_tmp.json
+            mv manifest_tmp.json manifest.json
+            echo "Injected migrations: $MIGRATIONS"
+          fi
+          
+          echo "Manifest generated for ${{ github.ref_name }} from built package"
+          echo "Sample entries:"
+          cat manifest.json | head -30
+
+      - name: Package files.zip
+        run: |
+          BUILD_DIR="release_build"
+          
+          # Create the zip package
+          cd "$BUILD_DIR"
+          zip -r -q ../files.zip nomad-cms/
+          cd ..
+          
+          # Cleanup build dir
+          rm -rf "$BUILD_DIR"
+          
+          ZIP_SIZE=$(du -h files.zip | cut -f1)
+          echo "Release package created: files.zip ($ZIP_SIZE)"
+
+      - name: Generate checksums
+        run: |
+          sha256sum manifest.json files.zip > checksums.sha256
+          echo "Checksums:"
+          cat checksums.sha256
+
+      - name: Sign manifest (optional)
+        if: env.GPG_PRIVATE_KEY != ''
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        run: |
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+          gpg --batch --detach-sign --armor manifest.json
+          mv manifest.json.asc manifest.json.sig
+          echo "Manifest signed with GPG"
+        continue-on-error: true
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: |
+            ## NOMAD CMS ${{ github.ref_name }}
+            
+            ### Release Info
+            - Previous version: `${{ steps.prev_tag.outputs.tag || 'N/A (first release)' }}`
+            - This version: `${{ github.ref_name }}`
+            
+            ### Assets
+            - `manifest.json` - File manifest with SHA-256 hashes
+            - `files.zip` - Full deployable package (frontend build + API + vendor)
+            - `checksums.sha256` - Checksum verification file
+
+            ### Verification
+            ```bash
+            sha256sum -c checksums.sha256
+            ```
+          files: |
+            manifest.json
+            files.zip
+            checksums.sha256
+            manifest.json.sig
+          fail_on_unmatched_files: false

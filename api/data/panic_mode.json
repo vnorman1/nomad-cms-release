@@ -1,0 +1,12 @@
+{
+    "enabled": false,
+    "deactivated_at": "2026-01-04T19:28:11+01:00",
+    "deactivated_by": 1,
+    "previous_activation": {
+        "enabled": true,
+        "activated_at": "2026-01-04T19:25:19+01:00",
+        "activated_by": 1,
+        "reason": "No reason specified (probably just paranoid)",
+        "sessions_revoked": 1
+    }
+}

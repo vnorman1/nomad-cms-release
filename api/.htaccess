@@ -1,0 +1,174 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# NOMAD CMS API - Fő .htaccess
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Engine bekapcsolása
+RewriteEngine On
+
+# ───────────────────────────────────────────────────────────────────────────
+# PATH-BASED ROUTER - Clean RESTful URLs
+# ───────────────────────────────────────────────────────────────────────────
+# Routes path-based requests to index.php (Front Controller)
+# Legacy /endpoints/*.php URLs still work directly
+#
+# Examples:
+#   /api/data/hero          → index.php → endpoints/data.php?key=hero
+#   /api/static/products    → index.php → endpoints/static-serve.php?slot=products
+#   /api/massive/users      → index.php → endpoints/massive.php?slot=users
+#   /api/endpoints/data.php → Direct PHP execution (legacy)
+# ───────────────────────────────────────────────────────────────────────────
+
+# Skip router for direct .php file requests (legacy support)
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteCond %{REQUEST_URI} \.php$
+RewriteRule ^ - [L]
+
+# Skip router for existing files (uploads, static assets)
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# Skip router for existing directories
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# ───────────────────────────────────────────────────────────────────────────
+# CORS Headers - Minden kéréshez
+# ───────────────────────────────────────────────────────────────────────────
+<IfModule mod_headers.c>
+    # Fejlesztői környezethez
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, Accept, Origin"
+    Header always set Access-Control-Allow-Credentials "true"
+    Header always set Access-Control-Max-Age "86400"
+    
+    # Biztonsági headerek
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# OPTIONS preflight kezelése - BEFORE router
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]
+
+# Authorization Header fix (Apache gyakran lenyeli)
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+# ───────────────────────────────────────────────────────────────────────────
+# Statikus fájlok - uploads mappa közvetlenül elérhető
+# ───────────────────────────────────────────────────────────────────────────
+
+# Uploads mappa - képek és fájlok közvetlenül elérhetők
+RewriteCond %{REQUEST_URI} ^/api/uploads/
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# ───────────────────────────────────────────────────────────────────────────
+# SVG SECURITY - Prevent script execution in SVG files
+# SVG files can contain JavaScript - serve them with safe headers
+# ───────────────────────────────────────────────────────────────────────────
+<IfModule mod_headers.c>
+    # For SVG files: Add CSP to prevent script execution
+    <FilesMatch "\.svg$">
+        Header always set Content-Security-Policy "script-src 'none'"
+        Header always set X-Content-Type-Options "nosniff"
+        # Force SVG to be treated as image, not HTML
+        Header always set Content-Disposition "inline; filename=%{REQUEST_FILENAME}e"
+    </FilesMatch>
+</IfModule>
+
+# ───────────────────────────────────────────────────────────────────────────
+# PHP beállítások
+# ───────────────────────────────────────────────────────────────────────────
+<IfModule mod_php.c>
+    php_value upload_max_filesize 64M
+    php_value post_max_size 64M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+    php_value memory_limit 256M
+</IfModule>
+
+# ───────────────────────────────────────────────────────────────────────────
+# Érzékeny fájlok védelme
+# ───────────────────────────────────────────────────────────────────────────
+
+# .env fájlok tiltása
+<Files ".env">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files ".env.example">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Composer fájlok tiltása
+<Files "composer.json">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "composer.lock">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Lock fájlok tiltása
+<FilesMatch "\.lock$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Git fájlok tiltása
+<FilesMatch "^\.git">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# ───────────────────────────────────────────────────────────────────────────
+# Könyvtárlistázás tiltása
+# ───────────────────────────────────────────────────────────────────────────
+Options -Indexes
+
+# ───────────────────────────────────────────────────────────────────────────
+# Alapértelmezett karakter kódolás
+# ───────────────────────────────────────────────────────────────────────────
+AddDefaultCharset UTF-8
+
+# JSON MIME típus
+<IfModule mod_mime.c>
+    AddType application/json .json
+</IfModule>
+
+# Gyorsítótár beállítások
+# ───────────────────────────────────────────────────────────────────────────
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # Képek - 1 hét
+    ExpiresByType image/jpeg "access plus 1 week"
+    ExpiresByType image/png "access plus 1 week"
+    ExpiresByType image/gif "access plus 1 week"
+    ExpiresByType image/webp "access plus 1 week"
+    ExpiresByType image/svg+xml "access plus 1 week"
+    
+    # JSON - nincs cache (ExpiresByType alone is not enough for modern browsers)
+    ExpiresByType application/json "access plus 0 seconds"
+</IfModule>
+
+# ───────────────────────────────────────────────────────────────────────────
+# Hibaoldalak (opcionális)
+# ───────────────────────────────────────────────────────────────────────────
+# ErrorDocument 404 /api/endpoints/error/404.php
+# ErrorDocument 500 /api/endpoints/error/500.php
+# ───────────────────────────────────────────────────────────────────────────
+# FRONT CONTROLLER - All remaining requests go to index.php (Router)
+# ───────────────────────────────────────────────────────────────────────────
+# This MUST be at the end of the file!
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]

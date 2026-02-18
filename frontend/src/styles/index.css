@@ -1,0 +1,166 @@
+/* NOMAD Design System - Typography */
+/* Using Inter (sans) and JetBrains Mono (mono) from Google Fonts */
+/* Local Geist Fonts */
+@font-face {
+    font-family: 'Geist Sans';
+    src: url('/fonts/GeistSans-Variable.woff2') format('woff2');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Geist Mono';
+    src: url('/fonts/GeistMono-Variable.woff2') format('woff2');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        /* NOMAD Light Mode - Technical Paper Spec */
+        --background: 0 0% 100%;
+        /* Pure White */
+        --foreground: 0 0% 3%;
+        /* Deep Ink Black */
+
+        --card: 0 0% 100%;
+        --card-foreground: 0 0% 3%;
+
+        --popover: 0 0% 100%;
+        --popover-foreground: 0 0% 3%;
+
+        --primary: 0 0% 3%;
+        --primary-foreground: 0 0% 98%;
+
+        --secondary: 0 0% 96%;
+        --secondary-foreground: 0 0% 3%;
+
+        --muted: 0 0% 92%;
+        --muted-foreground: 0 0% 40%;
+
+        --accent: 0 0% 94%;
+        --accent-foreground: 0 0% 3%;
+
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 0 0% 98%;
+
+        --border: 0 0% 86%;
+        /* Visible structural lines */
+        --input: 0 0% 86%;
+        --ring: 0 0% 3%;
+
+        --radius: 0px;
+
+        /* Custom Tokens */
+        --surface: 0 0% 98%;
+        --surface-foreground: 0 0% 3%;
+    }
+
+    .dark {
+        /* NOMAD Dark Mode - Blueprint Negative */
+        --background: 0 0% 4%;
+        /* #0a0a0a */
+        --foreground: 0 0% 96%;
+        /* Off-white */
+
+        --card: 0 0% 4%;
+        --card-foreground: 0 0% 96%;
+
+        --popover: 0 0% 4%;
+        --popover-foreground: 0 0% 96%;
+
+        --primary: 0 0% 96%;
+        --primary-foreground: 0 0% 4%;
+
+        --secondary: 0 0% 10%;
+        --secondary-foreground: 0 0% 96%;
+
+        --muted: 0 0% 12%;
+        --muted-foreground: 0 0% 60%;
+
+        --accent: 0 0% 12%;
+        --accent-foreground: 0 0% 96%;
+
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 0 0% 96%;
+
+        --border: 0 0% 14%;
+        --input: 0 0% 14%;
+        --ring: 0 0% 80%;
+
+        --surface: 0 0% 6%;
+        --surface-foreground: 0 0% 96%;
+    }
+
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground antialiased selection:bg-foreground selection:text-background;
+        font-family: 'Geist Sans', 'Inter', sans-serif;
+    }
+
+    /* Architectural Grid Background */
+    body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: -1;
+        color: var(--foreground);
+    }
+
+}
+
+@layer components {
+
+    /* Blueprint Button */
+    .btn {
+        @apply inline-flex items-center justify-center whitespace-nowrap text-xs font-mono tracking-widest uppercase transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 h-9 px-6 border border-transparent hover:border-foreground;
+    }
+
+    .btn-primary {
+        @apply bg-foreground text-background hover:bg-transparent hover:text-foreground;
+    }
+
+    .btn-secondary {
+        @apply border-border bg-transparent hover:border-foreground text-foreground;
+    }
+
+    /* Strict Inputs - Architect Style */
+    .input-field {
+        @apply flex h-10 w-full bg-transparent border-b border-border px-0 py-2 text-sm font-mono focus:border-foreground transition-all placeholder:text-muted-foreground/50 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 rounded-none;
+    }
+
+    /* Card Reset - Let Dashboard handle styling */
+    .fashion-card {
+        @apply relative border border-border bg-background p-6;
+    }
+
+    .badge {
+        @apply inline-flex items-center border border-foreground/20 px-2 py-0.5 text-[9px] font-mono uppercase tracking-widest transition-colors;
+    }
+
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        @apply bg-foreground/20 hover:bg-foreground/40 transition-colors;
+    }
+}

@@ -1,0 +1,392 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vajdanorman.hu",
+  "version": "2.1.0",
+  "description": "Teljes Magyar Produkciós Mockup Schema",
+  "staticPages": [
+    {
+      "path": "/",
+      "label": "Főoldal",
+      "priority": "1.0",
+      "changefreq": "daily"
+    },
+    {
+      "path": "/blog",
+      "label": "Blog",
+      "priority": "0.9",
+      "changefreq": "daily"
+    },
+    {
+      "path": "/kapcsolat",
+      "label": "Kapcsolat",
+      "priority": "0.5",
+      "changefreq": "monthly"
+    }
+  ],
+  "slots": {
+    "global": {
+      "label": "Globális Beállítások",
+      "description": "Az oldal alapvető beállításai, SEO és lábléc.",
+      "icon": "Settings",
+      "type": "object",
+      "fields": [
+        {
+          "id": "site_title",
+          "label": "Weboldal Címe",
+          "type": "text",
+          "required": true,
+          "placeholder": "Az Én Portfólióm"
+        },
+        {
+          "id": "contact_email",
+          "label": "Kapcsolati Email",
+          "type": "email",
+          "required": true,
+          "placeholder": "hello@oldalam.hu"
+        },
+        {
+          "id": "logo",
+          "label": "Logó",
+          "type": "image",
+          "required": true
+        },
+        {
+          "id": "seo_defaults",
+          "label": "SEO Alapértelmezések",
+          "type": "json",
+          "required": false,
+          "jsonSchema": {
+            "title": "Alapértelmezett Meta Cím",
+            "description": "Meta leírás",
+            "og_image": "OG kép URL"
+          }
+        },
+        {
+          "id": "social_links",
+          "label": "Közösségi Média Linkek",
+          "type": "blocks",
+          "required": false
+        },
+        {
+          "id": "maintenance_mode",
+          "label": "Karbantartás Mód",
+          "type": "boolean",
+          "required": false,
+          "defaultValue": false
+        }
+      ]
+    },
+    "pages": {
+      "label": "Oldalak",
+      "description": "Általános tartalmi oldalak kezelése (Rólunk, Adatvédelem stb.)",
+      "icon": "Layout",
+      "type": "collection",
+      "isSitemap": true,
+      "slugField": "slug",
+      "publishedField": "published",
+      "urlPattern": "/{slug}",
+      "fields": [
+        {
+          "id": "title",
+          "label": "Oldal Címe",
+          "type": "text",
+          "required": true,
+          "validation": {
+            "minLength": 3
+          }
+        },
+        {
+          "id": "slug",
+          "label": "URL Útvonal",
+          "type": "slug",
+          "required": true,
+          "slugSource": "title"
+        },
+        {
+          "id": "category",
+          "label": "Kategória",
+          "type": "select",
+          "options": [
+            {
+              "value": "general",
+              "label": "Általános"
+            },
+            {
+              "value": "legal",
+              "label": "Jogi"
+            },
+            {
+              "value": "landing",
+              "label": "Landing Page"
+            }
+          ]
+        },
+        {
+          "id": "content",
+          "label": "Tartalom",
+          "type": "richtext",
+          "required": false
+        },
+        {
+          "id": "cover_image",
+          "label": "Borítókép",
+          "type": "blocks",
+          "required": false
+        },
+        {
+          "id": "publish_date",
+          "label": "Közzététel Dátuma",
+          "type": "date",
+          "required": false
+        },
+        {
+          "id": "published",
+          "label": "Publikálva",
+          "type": "boolean",
+          "defaultValue": false
+        }
+      ]
+    },
+    "blog": {
+      "label": "Blog Bejegyzések",
+      "description": "Nagy mennyiségű tartalom kezelése (Massive Mode)",
+      "icon": "Newspaper",
+      "type": "massive",
+      "isSitemap": true,
+      "slugField": "slug",
+      "publishedField": "published",
+      "urlPattern": "/blog/{slug}",
+      "massive": {
+        "pageSize": 20,
+        "defaultSort": {
+          "field": "publish_date",
+          "direction": "desc"
+        },
+        "searchFields": [
+          "title",
+          "author",
+          "intro"
+        ],
+        "quickFilters": [
+          {
+            "field": "author",
+            "label": "Szerző Szerint",
+            "options": [
+              {
+                "value": "norman",
+                "label": "Norman"
+              },
+              {
+                "value": "guest",
+                "label": "Vendég"
+              }
+            ]
+          }
+        ],
+        "bulkActions": true,
+        "exportEnabled": true,
+        "encrypted": false,
+        "searchableFields": [
+          "title"
+        ]
+      },
+      "fields": [
+        {
+          "id": "title",
+          "label": "Bejegyzés Címe",
+          "type": "text",
+          "required": true,
+          "searchable": true,
+          "showInTable": true,
+          "columnWidth": 300
+        },
+        {
+          "id": "slug",
+          "label": "Keresőbarát URL",
+          "type": "slug",
+          "slugSource": "title",
+          "required": true
+        },
+        {
+          "id": "intro",
+          "label": "Rövid Bevezető",
+          "type": "textarea",
+          "required": true,
+          "validation": {
+            "maxLength": 300
+          }
+        },
+        {
+          "id": "content",
+          "label": "Teljes Tartalom",
+          "type": "richtext",
+          "required": true
+        },
+        {
+          "id": "external_link",
+          "label": "Külső Link (Opcionális)",
+          "type": "url",
+          "placeholder": "https://..."
+        },
+        {
+          "id": "author",
+          "label": "Szerző",
+          "type": "text",
+          "required": true,
+          "showInTable": true,
+          "sortable": true,
+          "filterable": true
+        },
+        {
+          "id": "publish_date",
+          "label": "Publikálás Ideje",
+          "type": "datetime",
+          "required": true,
+          "showInTable": true,
+          "sortable": true
+        },
+        {
+          "id": "tags",
+          "label": "Címkék",
+          "type": "multiselect",
+          "options": [
+            {
+              "value": "tech",
+              "label": "Technológia"
+            },
+            {
+              "value": "design",
+              "label": "Dizájn"
+            },
+            {
+              "value": "life",
+              "label": "Életmód"
+            },
+            {
+              "value": "news",
+              "label": "Hírek"
+            }
+          ],
+          "filterable": true
+        },
+        {
+          "id": "featured_image",
+          "label": "Kiemelt Kép",
+          "type": "image",
+          "required": false
+        },
+        {
+          "id": "views",
+          "label": "Megtekintések",
+          "type": "number",
+          "readOnly": true,
+          "showInTable": true,
+          "sortable": true
+        },
+        {
+          "id": "published",
+          "label": "Publikus",
+          "type": "boolean",
+          "defaultValue": false,
+          "showInTable": true
+        }
+      ]
+    },
+    "team": {
+      "label": "Csapat",
+      "description": "Munkatársak listája",
+      "icon": "Users",
+      "type": "list",
+      "fields": [
+        {
+          "id": "name",
+          "label": "Név",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "role",
+          "label": "Pozíció",
+          "type": "text",
+          "placeholder": "pl. Vezető Fejlesztő"
+        },
+        {
+          "id": "bio",
+          "label": "Rövid Életrajz",
+          "type": "textarea"
+        },
+        {
+          "id": "avatar",
+          "label": "Profilkép",
+          "type": "image"
+        },
+        {
+          "id": "socials",
+          "label": "Közösségi Profilok",
+          "type": "array"
+        }
+      ]
+    },
+    "tech_demo": {
+      "label": "Technológiai Bemutató",
+      "description": "Minden speciális mezőtípus demonstrálása",
+      "icon": "Sparkles",
+      "type": "object",
+      "fields": [
+        {
+          "id": "bnb",
+          "label": "bnb",
+          "type": "iframe",
+          "required": false
+        },
+        {
+          "id": "brand_color",
+          "label": "Márkaszín",
+          "type": "color",
+          "defaultValue": "#007BFF"
+        },
+        {
+          "id": "office_location",
+          "label": "Iroda Helyszíne",
+          "type": "map",
+          "helpText": "Válaszd ki a térképen"
+        },
+        {
+          "id": "internal_docs",
+          "label": "Belső Dokumentáció (Titkosított)",
+          "type": "file",
+          "fileConfig": {
+            "allowedTypes": [
+              "pdf",
+              "docx"
+            ],
+            "maxSizeMB": 50,
+            "secure": true
+          },
+          "description": "AES-256 titkosítással tárolva"
+        },
+        {
+          "id": "event_gallery",
+          "label": "Esemény Galéria",
+          "type": "video"
+        },
+        {
+          "id": "animated_preview",
+          "label": "Animált GIF Bemutató",
+          "type": "audio"
+        },
+        {
+          "id": "advanced_config",
+          "label": "Nyers Konfiguráció",
+          "type": "json"
+        },
+        {
+          "id": "page_content",
+          "label": "Dinamikus Tartalom",
+          "type": "blocks",
+          "description": "Drag-and-drop blokk szerkesztő"
+        }
+      ]
+    }
+  }
+}
