@@ -165,9 +165,8 @@ export function UpdateSystemTab({ setError, setSuccess }: SimpleTabProps) {
     };
 
     // Calculate total changes for display
-    const totalChanges = updateInfo
-        ? updateInfo.changes.added + updateInfo.changes.modified + updateInfo.changes.deleted
-        : 0;
+    const changes = updateInfo?.changes ?? { added: 0, modified: 0, deleted: 0, unchanged: 0 };
+    const totalChanges = changes.added + changes.modified + changes.deleted;
 
     const currentVersion = versionInfo?.version ?? '1.0.0';
 
@@ -342,7 +341,7 @@ export function UpdateSystemTab({ setError, setSuccess }: SimpleTabProps) {
                         </div>
                         <div className="p-3 border border-border text-center">
                             <div className="text-[10px] opacity-40 uppercase font-mono tracking-widest mb-1">Változatlan</div>
-                            <div className="text-lg font-mono font-bold">{updateInfo.changes.unchanged}</div>
+                            <div className="text-lg font-mono font-bold">{changes.unchanged}</div>
                         </div>
                     </div>
 
@@ -352,19 +351,19 @@ export function UpdateSystemTab({ setError, setSuccess }: SimpleTabProps) {
                             <span className="flex items-center justify-center w-5 h-5 bg-emerald-500/10 text-emerald-500">
                                 <Plus size={10} />
                             </span>
-                            <span className="opacity-50">{updateInfo.changes.added} új</span>
+                            <span className="opacity-50">{changes.added} új</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="flex items-center justify-center w-5 h-5 bg-blue-500/10 text-blue-500">
                                 <Edit3 size={10} />
                             </span>
-                            <span className="opacity-50">{updateInfo.changes.modified} módosított</span>
+                            <span className="opacity-50">{changes.modified} módosított</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="flex items-center justify-center w-5 h-5 bg-red-500/10 text-red-500">
                                 <Minus size={10} />
                             </span>
-                            <span className="opacity-50">{updateInfo.changes.deleted} törölt</span>
+                            <span className="opacity-50">{changes.deleted} törölt</span>
                         </div>
                     </div>
                 </div>
@@ -426,12 +425,14 @@ export function UpdateSystemTab({ setError, setSuccess }: SimpleTabProps) {
                                 availableVersions.map((version) => (
                                     <button
                                         key={version.tag}
+                                        disabled={version.isCurrent}
                                         onClick={() => {
+                                            if (version.isCurrent) return;
                                             setSelectedVersion(version.version);
                                             setShowVersionPicker(false);
                                             setTimeout(() => handleCheckUpdates(), 100);
                                         }}
-                                        className={`w-full flex items-center justify-between p-3 border-b border-border/50 hover:bg-foreground/5 transition-colors text-left ${version.isCurrent ? 'bg-foreground/5' : ''
+                                        className={`w-full flex items-center justify-between p-3 border-b border-border/50 transition-colors text-left ${version.isCurrent ? 'bg-foreground/5 opacity-50 cursor-not-allowed' : 'hover:bg-foreground/5 cursor-pointer'
                                             }`}
                                     >
                                         <div className="flex items-center gap-3">
