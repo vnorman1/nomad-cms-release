@@ -126,28 +126,28 @@ export function generateEndpointsFromConfig(): EndpointDef[] {
     // Static Auth Endpoints
     const authEndpoints: EndpointDef[] = [
         {
-            id: 'auth-login', name: 'Login', method: 'POST', 
+            id: 'auth-login', name: 'Login', method: 'POST',
             path: getEndpointPath('/auth/login', '/endpoints/auth/login.php'),
             description: 'Authenticate user with email and password', category: 'auth', requiresAuth: false,
             bodyTemplate: { email: 'user@example.com', password: '••••••••' }
         },
         {
-            id: 'auth-logout', name: 'Logout', method: 'POST', 
+            id: 'auth-logout', name: 'Logout', method: 'POST',
             path: getEndpointPath('/auth/logout', '/endpoints/auth/logout.php'),
             description: 'Invalidate current session', category: 'auth', requiresAuth: true,
         },
         {
-            id: 'auth-me', name: 'Get Current User', method: 'GET', 
+            id: 'auth-me', name: 'Get Current User', method: 'GET',
             path: getEndpointPath('/auth/me', '/endpoints/auth/me.php'),
             description: 'Retrieve authenticated user profile', category: 'auth', requiresAuth: true,
         },
         {
-            id: 'auth-refresh', name: 'Refresh Token', method: 'POST', 
+            id: 'auth-refresh', name: 'Refresh Token', method: 'POST',
             path: getEndpointPath('/auth/refresh', '/endpoints/auth/refresh.php'),
             description: 'Refresh JWT access token', category: 'auth', requiresAuth: true,
         },
         {
-            id: 'auth-preferences', name: 'User Preferences', method: 'GET', 
+            id: 'auth-preferences', name: 'User Preferences', method: 'GET',
             path: getEndpointPath('/auth/preferences', '/endpoints/auth/preferences.php'),
             description: 'Get or update user preferences', category: 'auth', requiresAuth: true,
         },
@@ -156,17 +156,17 @@ export function generateEndpointsFromConfig(): EndpointDef[] {
     // Static Admin Endpoints
     const adminEndpoints: EndpointDef[] = [
         {
-            id: 'admin-users', name: 'List Users', method: 'GET', 
+            id: 'admin-users', name: 'List Users', method: 'GET',
             path: getEndpointPath('/admin/users', '/endpoints/admin/users.php'),
             description: 'Get all users (admin only)', category: 'admin', requiresAuth: true,
         },
         {
-            id: 'admin-api-keys', name: 'API Keys', method: 'GET', 
+            id: 'admin-api-keys', name: 'API Keys', method: 'GET',
             path: getEndpointPath('/admin/api-keys', '/endpoints/admin/api-keys.php'),
             description: 'Manage API keys', category: 'admin', requiresAuth: true,
         },
         {
-            id: 'admin-backup', name: 'Create Backup', method: 'POST', 
+            id: 'admin-backup', name: 'Create Backup', method: 'POST',
             path: getEndpointPath('/admin/backup', '/endpoints/admin/backup.php'),
             description: 'Create database backup', category: 'admin', requiresAuth: true,
         },
@@ -175,7 +175,7 @@ export function generateEndpointsFromConfig(): EndpointDef[] {
     // Media Endpoints
     const mediaEndpoints: EndpointDef[] = [
         {
-            id: 'media-upload', name: 'Upload File', method: 'POST', 
+            id: 'media-upload', name: 'Upload File', method: 'POST',
             path: getEndpointPath('/upload', '/endpoints/upload.php'),
             description: 'Upload media file (image, document)', category: 'media', requiresAuth: true,
             bodyTemplate: { file: '(binary)', alt: 'Image description' }
@@ -197,6 +197,19 @@ export function generateEndpointsFromConfig(): EndpointDef[] {
             method: 'GET',
             path: dataPath,
             description: `Retrieve ${slotConfig.label.toLowerCase()} data`,
+            category: 'content',
+            requiresAuth: false,
+            slot: slotKey,
+            slotConfig: slotConfig,
+            queryParams: usePaths ? {} : { key: slotKey }
+        });
+
+        endpoints.push({
+            id: `static-get-${slotKey}`,
+            name: `Static ${slotConfig.label}`,
+            method: 'GET',
+            path: staticPath,
+            description: `Cached/static version of ${slotConfig.label.toLowerCase()} data`,
             category: 'content',
             requiresAuth: false,
             slot: slotKey,
