@@ -1,0 +1,20 @@
+{
+  "name": "nomad-versioning",
+  "type": "module",
+  "collaborators": [
+    "NOMAD CMS Team"
+  ],
+  "description": "Enterprise-grade Git-like version history with WASM-based diff engine",
+  "version": "1.0.0",
+  "license": "MIT",
+  "files": [
+    "nomad_versioning_bg.wasm",
+    "nomad_versioning.js",
+    "nomad_versioning.d.ts"
+  ],
+  "main": "nomad_versioning.js",
+  "types": "nomad_versioning.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
