@@ -14,11 +14,11 @@ namespace NomadCMS\Config;
 final class Version
 {
     // Current CMS Version - INCREMENT THIS FOR NEW RELEASES
-    public const VERSION = '1.0.0';
+    public const VERSION = '1.0.1';
     
     // Build information
-    public const BUILD_DATE = '2026-02-09';
-    public const CODENAME = 'Genesis';
+    public const BUILD_DATE = '2026-02-18';
+    public const CODENAME = 'Genesis Patch 1';
     
     // Minimum requirements
     public const MIN_PHP_VERSION = '8.2.0';
