@@ -38,7 +38,10 @@
         "sort-packages": true,
         "optimize-autoloader": true,
         "preferred-install": "dist",
-        "platform-check": false
+        "platform-check": false,
+        "platform": {
+            "php": "8.2.0"
+        }
     },
     "scripts": {
         "test": "phpstan analyse src -l max",
