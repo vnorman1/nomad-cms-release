@@ -201,6 +201,14 @@ class Router
         
         $this->addRoute('system/info', 'system/info.php');
         $this->addRoute('system/logs', 'system/logs.php');
+        $this->addRoute('system/version', 'system/version.php');
+        $this->addRoute('system/releases', 'system/releases.php');
+        $this->addRoute('system/check-update', 'system/check-update.php');
+        $this->addRoute('system/apply-update', 'system/apply-update.php');
+        $this->addRoute('system/rollback', 'system/rollback.php');
+        $this->addRoute('system/update-progress', 'system/update-progress.php');
+        $this->addRoute('system/security-alert', 'system/security-alert.php');
+        $this->addRoute('system/queue-process', 'system/queue-process.php');
         
         // Batch operations
         $this->addRoute('batch', 'batch-content.php');
