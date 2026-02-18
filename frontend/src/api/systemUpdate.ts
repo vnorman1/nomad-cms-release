@@ -63,7 +63,7 @@ export interface SystemVersionInfo {
  * Get current system version (PUBLIC - no auth required)
  */
 export async function getSystemVersion(): Promise<SystemVersionInfo> {
-    const response = await fetch(`${API_BASE}/system/version.php`);
+    const response = await fetch(`${API_BASE}/system/version`);
     const data = await response.json();
     if (!data.success) {
         throw new Error(data.error || 'Failed to get version');
@@ -80,7 +80,7 @@ export async function getSystemVersion(): Promise<SystemVersionInfo> {
  * Get list of available releases
  */
 export async function getAvailableReleases(): Promise<{ currentVersion: string; releases: VersionInfo[] }> {
-    const response = await apiClient.get('/system/releases.php');
+    const response = await apiClient.get('/system/releases');
     return {
         currentVersion: response.data.currentVersion,
         releases: response.data.releases ?? [],
@@ -92,7 +92,7 @@ export async function getAvailableReleases(): Promise<{ currentVersion: string; 
  */
 export async function checkForUpdates(targetVersion?: string): Promise<UpdateInfo> {
     const params = targetVersion ? `?version=${encodeURIComponent(targetVersion)}` : '';
-    const response = await apiClient.get(`/system/check-update.php${params}`);
+    const response = await apiClient.get(`/system/check-update${params}`);
     return response.data;
 }
 
@@ -100,7 +100,7 @@ export async function checkForUpdates(targetVersion?: string): Promise<UpdateInf
  * Apply update
  */
 export async function applyUpdate(targetVersion: string): Promise<UpdateResult> {
-    const response = await apiClient.post('/system/apply-update.php', { version: targetVersion });
+    const response = await apiClient.post('/system/apply-update', { version: targetVersion });
     return response.data;
 }
 
@@ -108,7 +108,7 @@ export async function applyUpdate(targetVersion: string): Promise<UpdateResult> 
  * Rollback to backup
  */
 export async function rollbackUpdate(backupId: string): Promise<{ success: boolean; error?: string }> {
-    const response = await apiClient.post('/system/rollback.php', { backupId });
+    const response = await apiClient.post('/system/rollback', { backupId });
     return response.data;
 }
 
@@ -130,7 +130,7 @@ export function subscribeToUpdateProgress(
     onError: (error: string) => void,
     onComplete: () => void
 ): () => void {
-    const url = `${API_BASE}/system/update-progress.php?token=${encodeURIComponent(token)}`;
+    const url = `${API_BASE}/system/update-progress?token=${encodeURIComponent(token)}`;
     const eventSource = new EventSource(url);
 
     eventSource.addEventListener('connected', () => {
