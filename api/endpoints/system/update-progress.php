@@ -10,7 +10,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../vendor/autoload.php';
 require_once __DIR__ . '/../../bootstrap.php';
 
-use NomadCMS\Services\Auth\JWTService;
+use NomadCMS\Auth\JWTService;
 
 // SSE headers
 header('Content-Type: text/event-stream');
@@ -32,8 +32,8 @@ if (!$token) {
 }
 
 try {
-    $jwt = JWTService::getInstance();
-    $payload = $jwt->validateToken($token);
+    $decoded = JWTService::validateAccessToken($token);
+    $payload = (array)($decoded->user ?? $decoded);
     
     if (!$payload || !($payload['is_admin'] ?? false)) {
         http_response_code(403);

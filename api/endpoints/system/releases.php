@@ -12,7 +12,7 @@ require_once __DIR__ . '/../../bootstrap.php';
 
 use NomadCMS\Config\Version;
 use NomadCMS\Services\UpdateDownloader;
-use NomadCMS\Services\Auth\JWTService;
+use NomadCMS\Auth\JWTService;
 use NomadCMS\Middleware\RateLimitMiddleware;
 
 header('Content-Type: application/json; charset=utf-8');
@@ -33,13 +33,13 @@ RateLimitMiddleware::checkSystemReleases();
 
 try {
     // Auth required
-    $jwt = JWTService::getInstance();
-    $token = $jwt->extractTokenFromHeader();
-    if (!$token || !$jwt->validateToken($token)) {
+    $token = JWTService::extractBearerToken();
+    if (!$token) {
         http_response_code(401);
         echo json_encode(['error' => 'Unauthorized']);
         exit;
     }
+    JWTService::validateAccessToken($token);
     
     $downloader = new UpdateDownloader();
     // No explicit params needed - uses Version config defaults

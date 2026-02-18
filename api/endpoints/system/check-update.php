@@ -15,7 +15,7 @@ use NomadCMS\Config\Version;
 use NomadCMS\Services\DeltaUpdateService;
 use NomadCMS\Services\UpdateDownloader;
 use NomadCMS\Services\SecurityValidator;
-use NomadCMS\Services\Auth\JWTService;
+use NomadCMS\Auth\JWTService;
 use NomadCMS\Middleware\RateLimitMiddleware;
 
 // Auth required for this endpoint
@@ -37,13 +37,13 @@ RateLimitMiddleware::checkSystemUpdateCheck();
 
 try {
     // Verify JWT
-    $jwt = JWTService::getInstance();
-    $token = $jwt->extractTokenFromHeader();
-    if (!$token || !$jwt->validateToken($token)) {
+    $token = JWTService::extractBearerToken();
+    if (!$token) {
         http_response_code(401);
         echo json_encode(['error' => 'Unauthorized']);
         exit;
     }
+    JWTService::validateAccessToken($token);
     
     // Get target version from query (optional - defaults to latest)
     $targetVersion = $_GET['version'] ?? null;

@@ -12,7 +12,7 @@ require_once __DIR__ . '/../../bootstrap.php';
 
 use NomadCMS\Services\DeltaUpdateService;
 use NomadCMS\Services\UpdateAuditLogger;
-use NomadCMS\Services\Auth\JWTService;
+use NomadCMS\Auth\JWTService;
 use NomadCMS\Middleware\RateLimitMiddleware;
 
 header('Content-Type: application/json; charset=utf-8');
@@ -33,9 +33,14 @@ RateLimitMiddleware::checkSystemUpdateApply();
 
 try {
     // Verify JWT and admin status
-    $jwt = JWTService::getInstance();
-    $token = $jwt->extractTokenFromHeader();
-    $payload = $jwt->validateToken($token);
+    $token = JWTService::extractBearerToken();
+    if (!$token) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Unauthorized']);
+        exit;
+    }
+    $decoded = JWTService::validateAccessToken($token);
+    $payload = (array)($decoded->user ?? $decoded);
     
     if (!$payload) {
         http_response_code(401);

@@ -22,7 +22,7 @@ use NomadCMS\Services\UpdateDownloader;
 use NomadCMS\Services\SecurityValidator;
 use NomadCMS\Services\UpdateAuditLogger;
 use NomadCMS\Services\MigrationRunner;
-use NomadCMS\Services\Auth\JWTService;
+use NomadCMS\Auth\JWTService;
 use NomadCMS\Middleware\RateLimitMiddleware;
 
 header('Content-Type: application/json; charset=utf-8');
@@ -79,9 +79,14 @@ $deltaApplyReached = false;
 
 try {
     // Verify JWT and admin status
-    $jwt = JWTService::getInstance();
-    $token = $jwt->extractTokenFromHeader();
-    $payload = $jwt->validateToken($token);
+    $token = JWTService::extractBearerToken();
+    if (!$token) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Unauthorized']);
+        exit;
+    }
+    $decoded = JWTService::validateAccessToken($token);
+    $payload = (array)($decoded->user ?? $decoded);
     
     if (!$payload) {
         http_response_code(401);
