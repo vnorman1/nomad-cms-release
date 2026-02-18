@@ -6,7 +6,7 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": "^8.1",
+        "php": "^8.0",
         "defuse/php-encryption": "^2.4",
         "endroid/qr-code": "^5.0",
         "firebase/php-jwt": "^6.10",
