@@ -1,0 +1,24 @@
+{
+    "format": "nomad-release/v1",
+    "product": "nomad-cms",
+    "key_id": "ad39b70f35d2dec0e50e86fbbd96bdda06cc1a637c173bab3385d714589ab948",
+    "version": "1.0.0",
+    "build_id": "8454a5e6352b583b6324fed5c44847e59250b851",
+    "build_date": "2026-10-14",
+    "codename": "Genesis",
+    "min_php": "8.2.0",
+    "updater_protocol": 1,
+    "storage_epoch": 1,
+    "min_upgrade_version": "1.0.0",
+    "min_rollback_version": "1.0.0",
+    "manual_upgrade": false,
+    "migrations": [],
+    "archive": {
+        "name": "nomad-cms.zip",
+        "size": 22575519,
+        "sha256": "51fc5199976f43f82867e21537c5572d1ac4594d6b9e47298716c2eda269ece3",
+        "manifest_sha256": "212c258f6aa32cece94cddd88dce7ae16fe47f4c3fc009b8bb94c6c2d0c1e39a",
+        "unpacked_size": 41580106,
+        "file_count": 1782
+    }
+}
