@@ -16,11 +16,11 @@ No SSH or Composer is required for the standalone installer.
 
 ### Dashboard
 
-![Dashboard](./media/dashboard.png)
+![Dashboard](./media/dashboard.jpg)
 
 ### Login page
 
-![Login page](./media/loginpage.png)
+![Login page](./media/loginpage.jpg)
 
 ### Install
 
