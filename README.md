@@ -24,7 +24,9 @@ No SSH or Composer is required for the standalone installer.
 
 ### Install
 
-[Watch the install video](./media/install.mp4)
+![Install](./media/install.gif)
+
+[Download the MP4 version](./media/install.mp4)
 
 ## Updates
 
